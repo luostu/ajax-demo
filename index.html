@@ -21,15 +21,20 @@
             return nodes
         }
         window.$ = window.jQuery
+        window.promise=function(fn){
+            return{
+                then:function(){}
+            }
+        }
         window.jQuery.ajax = function ({
             url,
             method,
             body,
-            successFn,
-            failFn,
             headers
         }) {
-            let request = new XMLHttpRequest()
+            return new Promise(function (resove,reject)
+            {
+                let request = new XMLHttpRequest()
             request.open(method, url)
             for (let key in headers) {
                 let value = headers[key]
@@ -38,13 +43,15 @@
             request.onreadystatechange = () => {
                 if (request.readyState === 4) {
                     if (request.status >= 200 && request.status < 300) {
-                        successFn.call(undefined, request.responseText)
+                        resove.call(undefined, request.responseText)
                     } else if (request.status >= 400) {
-                        failFn.call(undefined, request)
+                        reject.call(undefined, request)
                     }
                 }
             }
             request.send(body)
+            })
+            
         }
 
         function f1(responseText) {
@@ -58,28 +65,19 @@
         }
         button.addEventListener('click', (e) => {
           
-            window.jQuery.ajax({
+           let promise= window.jQuery.ajax({
                 url: '/xxxx',
                 method: 'get',
                 headers: {
                     'content-type': 'application/x-www-form-urlencoded',
                     'sty': '18'
-                },
-             
-                successFn: (x) => {
-                    f1.call(undefined, x)
-                    f2.call(undefined, x)
-                     
-                },
-                failFn: (x) => {
-                    consile.log(x)
-                    console.log(x.status)
-                    console.log(x.responseText)
                 }
             })
-
-        
-
+       
+           promise.then(
+               (text)=>{console.log(text)},
+               (request)=>{console.log(request)}
+           )
 
 
 
